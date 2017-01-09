@@ -54,5 +54,6 @@ signals:
 
 private slots:
 	void slotBtnZoomBoundingsClicked();
+	void slotBtnWireframeClicked();
 	void slotBtnRemoveSelectedObjectsClicked();
 };

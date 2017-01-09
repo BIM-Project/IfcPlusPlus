@@ -21,6 +21,7 @@
 
 #include "Command.h"
 #include "IfcPlusPlusSystem.h"
+#include "ViewController.h"
 #include "LoadIfcFileCommand.h"
 
 LoadIfcFileCommand::LoadIfcFileCommand( IfcPlusPlusSystem* system ): Command(system)
@@ -28,7 +29,10 @@ LoadIfcFileCommand::LoadIfcFileCommand( IfcPlusPlusSystem* system ): Command(sys
 	
 }
 
-LoadIfcFileCommand::~LoadIfcFileCommand(){}
+LoadIfcFileCommand::~LoadIfcFileCommand()
+{
+
+}
 
 void LoadIfcFileCommand::setFilePath( std::wstring& path_in )
 {
@@ -43,8 +47,8 @@ bool LoadIfcFileCommand::doCmd()
 	}
 
 	// first remove previously loaded geometry from scenegraph
-	
-	osg::ref_ptr<osg::Switch> model_switch = m_system->getModelNode();
+	shared_ptr<ViewController> vc = m_system->getViewController();
+	osg::ref_ptr<osg::Switch> model_switch = vc->m_sw_model;
 	GeomUtils::removeChildren( model_switch );
 	m_system->clearSelection();
 
@@ -107,7 +111,8 @@ bool LoadIfcFileCommand::doCmd()
 	}
 
 	geometry_converter->clearInputCache();
-	
+	vc->switchCurveRepresentation( model_switch, vc->m_show_curve_representation );
+
 	if( err.tellp() > 0 )
 	{
 		throw IfcPPException( err.str().c_str() );

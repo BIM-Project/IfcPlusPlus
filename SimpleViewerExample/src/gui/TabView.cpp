@@ -29,6 +29,7 @@
 #include <ifcpp/geometry/GeometryConverter.h>
 
 #include "IfcPlusPlusSystem.h"
+#include "ViewController.h"
 #include "viewer/ViewerWidget.h"
 #include "viewer/OrbitCameraManipulator.h"
 
@@ -50,7 +51,7 @@ TabView::TabView( IfcPlusPlusSystem* sys, ViewerWidget* vw ) : m_system(sys), m_
 	{
 		m_cull_back = settings.value("cullBackFaces").toBool();
 	}
-	GeomUtils::cullFrontBack( m_cull_front, m_cull_back, m_system->getRootNode()->getOrCreateStateSet() );
+	GeomUtils::cullFrontBack( m_cull_front, m_cull_back, m_system->getViewController()->m_rootnode->getOrCreateStateSet() );
 
 	// cull face buttons
 	QCheckBox* cull_front_faces = new QCheckBox( "Cull front faces" );
@@ -108,6 +109,7 @@ TabView::TabView( IfcPlusPlusSystem* sys, ViewerWidget* vw ) : m_system(sys), m_
 		{
 			m_check_show_curve_representations->setChecked( true );
 		}
+		m_system->getViewController()->switchCurveRepresentation( m_system->getViewController()->m_sw_model, show_curves );
 	}
 	connect( m_check_show_curve_representations, SIGNAL( stateChanged(int) ), this, SLOT( slotShowCurves(int) ) );
 
@@ -127,9 +129,10 @@ TabView::TabView( IfcPlusPlusSystem* sys, ViewerWidget* vw ) : m_system(sys), m_
 	setLayout( vbox );
 }
 
+
 void TabView::slotToggleSceneLight()
 {
-	m_system->toggleSceneLight();
+	m_system->getViewController()->toggleSceneLight();	
 }
 
 void TabView::slotCullFrontFaces( int state )
@@ -145,7 +148,7 @@ void TabView::slotCullFrontFaces( int state )
 	QSettings settings(QSettings::UserScope, QLatin1String("IfcPlusPlus"));
 	settings.setValue("cullFrontFaces", m_cull_front );
 
-	GeomUtils::cullFrontBack( m_cull_front, m_cull_back, m_system->getRootNode()->getOrCreateStateSet() );
+	GeomUtils::cullFrontBack( m_cull_front, m_cull_back, m_system->getViewController()->m_rootnode->getOrCreateStateSet() );
 }
 
 void TabView::slotCullBackFaces( int state )
@@ -161,7 +164,19 @@ void TabView::slotCullBackFaces( int state )
 	QSettings settings(QSettings::UserScope, QLatin1String("IfcPlusPlus"));
 	settings.setValue("cullBackFaces", m_cull_back );
 
-	GeomUtils::cullFrontBack( m_cull_front, m_cull_back, m_system->getRootNode()->getOrCreateStateSet() );
+	GeomUtils::cullFrontBack( m_cull_front, m_cull_back, m_system->getViewController()->m_rootnode->getOrCreateStateSet() );
+}
+
+void TabView::slotProjectionButtonClicked( int btn )
+{
+	if( btn == 0 )
+	{
+		m_vw->setProjection( ViewerWidget::PROJECTION_PERSPECTIVE );
+	}
+	else if( btn == 1 )
+	{
+		m_vw->setProjection( ViewerWidget::PROJECTION_PARALLEL );
+	}
 }
 
 void TabView::slotSetNumVertices( int num_vertices )
@@ -174,7 +189,7 @@ void TabView::slotSetNumVertices( int num_vertices )
 void TabView::slotShowCurves( int state )
 {
 	bool curves_on = state == Qt::Checked;
-	m_system->switchCurveRepresentation( m_system->getModelNode(), curves_on );
+	m_system->getViewController()->switchCurveRepresentation( m_system->getViewController()->m_sw_model, curves_on );
 	QSettings settings(QSettings::UserScope, QLatin1String("IfcPlusPlus"));
 	settings.setValue( "ShowCurveRepresentations", curves_on );
 }

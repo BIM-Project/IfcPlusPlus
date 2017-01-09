@@ -13,33 +13,35 @@
 
 #pragma once
 
-#include <qglobal.h>
-#include <QWidget>
-#include <QSpinBox>
-#include <QCheckBox>
+#include <vector>
+#include <osg/Array>
+#include <osg/Geode>
+#include <osg/Group>
+#include <osgViewer/Viewer>
+#include <osgViewer/CompositeViewer>
 
-class IfcPlusPlusSystem;
-class ViewerWidget;
+#include <QTreeWidget>
 
-class TabView : public QWidget
+class ViewerUtil
 {
-	Q_OBJECT
 public:
-	TabView( IfcPlusPlusSystem* s, ViewerWidget* vw );
-
-private:
-	IfcPlusPlusSystem*	m_system;
-	ViewerWidget*	m_vw;
-	QSpinBox*		m_spinbox_circle_vertices;
-	QCheckBox*		m_check_show_curve_representations;
-	bool			m_cull_front;
-	bool			m_cull_back;
-	
-private slots:
-	void slotToggleSceneLight();
-	void slotCullFrontFaces( int state );
-	void slotCullBackFaces( int state );
-	void slotProjectionButtonClicked( int btn );
-	void slotSetNumVertices(int);
-	void slotShowCurves( int );
+	static QTreeWidgetItem* findItemByIfcId( QTreeWidgetItem* item, int ifc_id )
+	{
+		int num_children = item->childCount();
+		for( int i = 0; i<num_children; ++i )
+		{
+			QTreeWidgetItem* child = item->child( i );
+			int id = child->text( 1 ).toUInt();
+			if( id == ifc_id )
+			{
+				return child;
+			}
+			QTreeWidgetItem* child_of_child = findItemByIfcId( child, ifc_id );
+			if( child_of_child != 0 )
+			{
+				return child_of_child;
+			}
+		}
+		return 0;
+	}
 };
